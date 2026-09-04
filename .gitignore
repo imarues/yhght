@@ -1,0 +1,6 @@
+.theos/
+packages/
+release/
+build_tweaks/
+*.deb
+.DS_Store

@@ -1,0 +1,82 @@
+name: Build Telegram Multi Manager
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'Manager.mm'
+      - 'Makefile'
+      - 'control'
+      - 'Tweaks/**'
+      - 'scripts/**'
+      - '.github/workflows/build.yml'
+
+jobs:
+  build:
+    runs-on: macos-15
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Theos and iOS SDKs
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export THEOS="$GITHUB_WORKSPACE/theos"
+          git clone --depth=1 https://github.com/theos/theos.git "$THEOS"
+          git clone --depth=1 https://github.com/theos/sdks.git "$THEOS/sdks"
+          echo "THEOS=$THEOS" >> "$GITHUB_ENV"
+
+      - name: Validate original tweak files
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 scripts/verify_macho.py Tweaks/Original/Mx.dylib Tweaks/Original/iQTele.dylib Tweaks/Original/Lead.dylib
+          ls -lh Tweaks/Original/*.dylib
+
+      - name: Patch tweaks for managed startup
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -rf build_tweaks
+          python3 scripts/patch_tweaks.py --input-dir Tweaks/Original --output-dir build_tweaks
+          python3 scripts/verify_macho.py build_tweaks/Mx.dylib build_tweaks/iQTele.dylib build_tweaks/Lead.dylib
+
+      - name: Build manager dylib
+        shell: bash
+        run: |
+          set -euxo pipefail
+          make clean
+          make FINALPACKAGE=1 -j2
+          MANAGER="$(find .theos -type f -name 'TelegramMultiManager.dylib' ! -path '*.dSYM/*' -print -quit)"
+          test -n "$MANAGER"
+          file "$MANAGER"
+          xcrun lipo -archs "$MANAGER" | grep -qw arm64
+          xcrun otool -hv "$MANAGER" | grep -q DYLIB
+          cp "$MANAGER" TelegramMultiManager.dylib
+
+      - name: Package Feather files
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -rf release
+          mkdir release
+          cp TelegramMultiManager.dylib release/
+          cp build_tweaks/Mx.dylib release/
+          cp build_tweaks/iQTele.dylib release/
+          cp build_tweaks/Lead.dylib release/
+          cp FEATHER.md release/
+          cd release
+          shasum -a 256 *.dylib > SHA256SUMS.txt
+          ls -lh
+
+      - name: Upload Feather artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TelegramMultiManager-Feather
+          path: release/
+          if-no-files-found: error

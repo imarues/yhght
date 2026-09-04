@@ -1,0 +1,8 @@
+Package: com.ikiraplus.telegrammultimanager
+Name: Telegram Multi Manager
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: Three-finger Telegram tweak selector for Mx, iQTele and Lead.
+Maintainer: iKiraPlus
+Author: iKiraPlus
+Section: Tweaks
