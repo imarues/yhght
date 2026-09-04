@@ -28,7 +28,14 @@ jobs:
           set -euxo pipefail
           export THEOS="$GITHUB_WORKSPACE/theos"
           rm -rf "$THEOS"
-          git clone --depth=1 https://github.com/theos/theos.git "$THEOS"
+          # Theos vendor headers/libs are Git submodules, so a recursive clone is required.
+          git clone --recursive https://github.com/theos/theos.git "$THEOS"
+          git -C "$THEOS" submodule update --init --recursive
+
+          # Fail early if the Theos vendor submodules were not populated.
+          test -d "$THEOS/vendor/include"
+          test -d "$THEOS/vendor/lib"
+          echo "Theos vendor submodules are ready."
 
           # The Theos repository may already create/populate the sdks path.
           # Replace it cleanly before cloning the official SDK repository.
