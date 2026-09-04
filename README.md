@@ -1,3 +1,5 @@
+> Build fix: GitHub Actions now cleans the Theos SDK directory before cloning the official SDK repository, preventing the `destination path .../theos/sdks already exists` failure.
+
 # Telegram Multi Manager
 
 لوحة تحكم لتفعيل/تعطيل ثلاثة dylibs داخل Telegram:
