@@ -1,22 +1,14 @@
-# Feather installation
+# Feather
 
-داخل Feather اختر Telegram IPA ثم افتح **Tweaks** وأضف الملفات الأربعة التالية من Artifact:
+1. Build the project with GitHub Actions.
+2. Download the `MultiTele-Feather` artifact.
+3. In Feather, open the Telegram IPA and add these four files under Tweaks:
+   - MultiTele.dylib
+   - Mx.dylib
+   - iQTele.dylib
+   - Lead.dylib
+4. Sign and install Telegram.
+5. Touch the Telegram screen with three fingers together to open MultiTele.
+6. Choose tweaks and tap Done. Telegram closes; reopen it to apply the selection.
 
-1. `TelegramMultiManager.dylib`
-2. `Mx.dylib`
-3. `iQTele.dylib`
-4. `Lead.dylib`
-
-ثم وقّع التطبيق وثبته.
-
-**مهم:** لا تخلط الملفات الأصلية مع الملفات الخارجة من GitHub Actions. الملفات الناتجة تم تعديل startup initializer metadata فيها حتى تكون تحت تحكم اللوحة.
-
-`iQTele.dylib` مرتبط بـ `@rpath/CydiaSubstrate.framework/CydiaSubstrate`. Feather/ElleKit يجب أن يوفر طبقة التوافق أثناء tweak injection. لا تضف نسخة ثانية عشوائية من CydiaSubstrate إذا Feather أضافها بالفعل.
-
-بعد فتح Telegram:
-- 3 أصابع على الشاشة → تفتح اللوحة.
-- فعّل/طفّي Mx أو iQTele أو Lead.
-- أغلق Telegram بالكامل من App Switcher.
-- افتحه مرة ثانية لتطبيق الاختيار.
-
-يمكن تفعيل أكثر من أداة معاً. بما أن Mx وLead يلمسان أجزاء متشابهة من Telegram، التوافق الكامل لكل ميزة مع كل إصدار Telegram لا يمكن ضمانه؛ إذا ظهرت مشكلة اختبر كل واحدة منفردة لتحديد التعارض.
+Do not replace the workflow-produced Mx/iQTele/Lead dylibs with the original versions.

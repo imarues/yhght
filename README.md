@@ -1,43 +1,35 @@
-> Build fix: GitHub Actions now cleans the Theos SDK directory before cloning the official SDK repository, preventing the `destination path .../theos/sdks already exists` failure.
+# MultiTele
 
-# Telegram Multi Manager
+MultiTele is a three-finger Telegram tweak manager for Mx, iQTele and Lead.
 
-لوحة تحكم لتفعيل/تعطيل ثلاثة dylibs داخل Telegram:
+## Panel
+- Default language: Arabic.
+- Supported panel languages: Arabic, English, French, Spanish, Chinese, Turkish, Persian, Russian, Vietnamese and Indonesian.
+- Touch Telegram with three fingers together to open the panel.
+- Choose one or more tweaks and tap **Done**. MultiTele saves the choices and closes Telegram so the selected tweaks are applied on the next launch.
+- Choosing a different panel language also saves the language and closes Telegram so the whole UI reloads in that language.
 
+## GitHub Actions
+Run **Build MultiTele** from Actions. Download the `MultiTele-Feather` artifact and inject all four dylibs into Telegram with Feather:
+
+- `MultiTele.dylib`
 - `Mx.dylib`
 - `iQTele.dylib`
 - `Lead.dylib`
 
-## طريقة فتح اللوحة
-المس شاشة Telegram بثلاث أصابع معاً لمدة قصيرة جداً (~0.05 ثانية).
+Use only the Mx/iQTele/Lead files produced by the workflow because they are patched for managed startup.
 
-## طريقة العمل
-GitHub Actions يبني `TelegramMultiManager.dylib` ويحوّل startup initializer sections في الديلبات الثلاثة إلى managed sections. لذلك Feather يستطيع حقن الملفات الأربعة، لكن Mx/iQTele/Lead لا يشغلون initializers تلقائياً. الـManager يشغل initializers فقط للأدوات المفعّلة في الإعدادات.
+## Links shown in the panel
+- https://t.me/ikiraplus
+- https://t.me/ikira18
+- https://ipastore.pages.dev
 
-كل التغييرات تطبق بعد إغلاق Telegram بالكامل وفتحه من جديد. لا يتم استخدام `dlclose` أو محاولة إزالة hooks من العملية الحالية.
+The three panel images use the direct raw GitHub image URLs supplied for iKiraPlus.
 
-## تعارض Mx + Lead
-Mx وLead يعرّفان كلاهما Objective-C classes باسم `LanguageSelector` و`LocationSelector`. الـworkflow يعيد تسمية نسخ Lead إلى أسماء مساوية بالطول قبل إخراج artifact لتجنب duplicate Objective-C class registration عند حقن الاثنين معاً.
+> iOS does not provide a supported API for an app to relaunch itself. MultiTele closes Telegram after Done/language change; open Telegram again to complete the restart.
 
-## Build
-1. ارفع محتويات هذا المجلد إلى GitHub branch `main`.
-2. افتح **Actions**.
-3. اختر **Build Telegram Multi Manager**.
-4. اختر **Run workflow**.
-5. نزّل Artifact باسم **TelegramMultiManager-Feather**.
 
-داخل Artifact تحصل على:
-
-```
-TelegramMultiManager.dylib
-Mx.dylib
-iQTele.dylib
-Lead.dylib
-FEATHER.md
-SHA256SUMS.txt
-```
-
-استخدم فقط نسخ Mx/iQTele/Lead الخارجة من الـAction، وليس الملفات الأصلية.
-
-## Minimum target
-الـManager مبني لـ iOS 15+ arm64.
+## Apply behavior
+- Choosing a different panel language saves it, shows a confirmation alert, and closes Telegram after OK. Reopen Telegram to see the new language.
+- Tapping Done saves tweak choices and closes Telegram so they apply on the next launch.
+- The three displayed URLs are directly tappable and open their destinations.
