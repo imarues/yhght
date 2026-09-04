@@ -228,6 +228,7 @@ static UIImageView *MTAsyncImage(NSString *urlString) {
     NSURL *url = [NSURL URLWithString:urlString];
     if (url) {
         [[[NSURLSession sharedSession] dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+            (void)response;
             if (!data.length || error) return;
             UIImage *img = [UIImage imageWithData:data];
             if (!img) return;
@@ -407,10 +408,26 @@ static UIImageView *MTAsyncImage(NSString *urlString) {
 
 - (void)switchChanged:(UISwitch *)sender {
     NSString *key = sender.accessibilityIdentifier;
-    if (key.length) MTSetPref(key, sender.isOn);
+    if (!key.length) return;
+
+    // Mx and Lead are mutually exclusive because they overlap internally.
+    // Turning one ON immediately turns the other OFF. iQTele is independent.
+    if (sender.isOn && [key isEqualToString:kMxKey]) {
+        _lead.on = NO;
+        MTSetPref(kLeadKey, NO);
+    } else if (sender.isOn && [key isEqualToString:kLeadKey]) {
+        _mx.on = NO;
+        MTSetPref(kMxKey, NO);
+    }
+
+    MTSetPref(key, sender.isOn);
 }
 
 - (void)doneAndRestart {
+    // Defensive guard: never persist Mx + Lead as enabled together.
+    if (_mx.isOn && _lead.isOn) {
+        _lead.on = NO;
+    }
     MTSetPref(kMxKey, _mx.isOn);
     MTSetPref(kIQKey, _iq.isOn);
     MTSetPref(kLeadKey, _lead.isOn);
@@ -514,9 +531,20 @@ static void MTAttachGesture(void) {
 }
 
 static void MTApplySelectedTweaks(void) {
-    if (MTPref(kMxKey))   MTRunInitOffsets("Mx.dylib");
-    if (MTPref(kIQKey))   MTRunInitOffsets("iQTele.dylib");
-    if (MTPref(kLeadKey)) MTRunInitOffsets("Lead.dylib");
+    BOOL mx = MTPref(kMxKey);
+    BOOL iq = MTPref(kIQKey);
+    BOOL lead = MTPref(kLeadKey);
+
+    // Migrate/sanitize old preferences that may have both conflicting tweaks ON.
+    // Keep Mx and turn Lead OFF in that legacy state.
+    if (mx && lead) {
+        lead = NO;
+        MTSetPref(kLeadKey, NO);
+    }
+
+    if (mx)   MTRunInitOffsets("Mx.dylib");
+    if (iq)   MTRunInitOffsets("iQTele.dylib");
+    if (lead) MTRunInitOffsets("Lead.dylib");
 }
 
 __attribute__((constructor)) static void MultiTeleInit(void) {

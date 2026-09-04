@@ -33,3 +33,6 @@ The three panel images use the direct raw GitHub image URLs supplied for iKiraPl
 - Choosing a different panel language saves it, shows a confirmation alert, and closes Telegram after OK. Reopen Telegram to see the new language.
 - Tapping Done saves tweak choices and closes Telegram so they apply on the next launch.
 - The three displayed URLs are directly tappable and open their destinations.
+
+## Mx / Lead compatibility
+Mx and Lead are mutually exclusive in MultiTele. Enabling one automatically disables the other. iQTele can be enabled with either one.

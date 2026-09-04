@@ -12,3 +12,6 @@
 6. Choose tweaks and tap Done. Telegram closes; reopen it to apply the selection.
 
 Do not replace the workflow-produced Mx/iQTele/Lead dylibs with the original versions.
+
+## Mx / Lead compatibility
+Mx and Lead are mutually exclusive in MultiTele. Enabling one automatically disables the other. iQTele can be enabled with either one.
