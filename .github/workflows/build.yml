@@ -27,6 +27,14 @@ jobs:
         run: |
           set -euxo pipefail
           export THEOS="$GITHUB_WORKSPACE/theos"
+
+          # Theos uses ldid to sign iOS binaries on macOS.
+          if ! command -v ldid >/dev/null 2>&1; then
+            brew install ldid
+          fi
+          command -v ldid
+          ldid -h >/dev/null 2>&1 || true
+
           rm -rf "$THEOS"
           # Theos vendor headers/libs are Git submodules, so a recursive clone is required.
           git clone --recursive https://github.com/theos/theos.git "$THEOS"
@@ -66,6 +74,8 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+          echo "Using ldid: $(command -v ldid)"
+          command -v ldid >/dev/null
           make clean
           make FINALPACKAGE=1 -j2
           MANAGER="$(find .theos -type f -name 'TelegramMultiManager.dylib' ! -path '*.dSYM/*' -print -quit)"
